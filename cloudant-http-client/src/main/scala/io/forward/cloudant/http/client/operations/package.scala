@@ -1,4 +1,4 @@
-package io.forward.ibm.cloudant
+package io.forward.cloudant.http.client
 
 import akka.http.scaladsl.model.Uri
 

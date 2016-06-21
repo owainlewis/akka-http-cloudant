@@ -1,17 +1,34 @@
-name := "akka-http-cloudant"
+lazy val commonSettings = Seq(
+  organization := "io.forward",
+  version := "0.1.0",
+  scalaVersion := "2.11.8"
+)
 
-version := "1.0"
+val akkaVersion = "2.4.7"
 
-scalaVersion := "2.11.8"
+val catsVersion = "0.6.0"
 
-libraryDependencies ++= {
-  val akkaVersion = "2.4.7"
-  val catsVersion = "0.6.0"
-  Seq(
-    "com.typesafe.akka" %% "akka-http-core"         % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion,
-    "com.typesafe.akka" %% "akka-stream"            % akkaVersion,
-    "org.typelevel"     %% "cats"                   % catsVersion
+lazy val client = (project in file("cloudant-http-client"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "cloudant-http-client",
+    libraryDependencies ++= {
+      Seq(
+        "com.typesafe.akka" %% "akka-http-core"         % akkaVersion,
+        "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion,
+        "com.typesafe.akka" %% "akka-stream"            % akkaVersion,
+        "org.typelevel"     %% "cats"                   % catsVersion
+      )
+    }
   )
-}
-    
+
+
+lazy val root = (project in file("."))
+  .aggregate(client)
+  .dependsOn(client)
+  .settings(commonSettings)
+  .settings(
+    name := "cloudant-akka-http",
+    publish := {}, // skip publishing for this root project.
+    publishLocal := {}
+  )

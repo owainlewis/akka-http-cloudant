@@ -1,6 +1,6 @@
-package io.forward.ibm.cloudant
+package io.forward.cloudant.http
 
-package object api {
+package object client {
   /**
     * Type alias for document id
     */

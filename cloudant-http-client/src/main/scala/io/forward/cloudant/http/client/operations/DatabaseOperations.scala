@@ -1,9 +1,9 @@
-package io.forward.ibm.cloudant.operations
+package io.forward.cloudant.http.client.operations
 
-import akka.http.scaladsl.model.{Uri, HttpMethods, HttpRequest}
-import io.forward.ibm.cloudant.CloudantConfig
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, Uri}
+import io.forward.cloudant.http.client.CloudantConfig
 
-class DatabaseOperations(config: CloudantConfig) {
+final class DatabaseOperations(config: CloudantConfig) {
   /**
     * Create a database
     *
@@ -21,8 +21,11 @@ class DatabaseOperations(config: CloudantConfig) {
   def read(dbName: String): HttpRequest =
     HttpRequest(HttpMethods.GET, uri = uriFor(config, dbName))
 
+  def delete(dbName: String): HttpRequest =
+    HttpRequest(HttpMethods.DELETE, uri = uriFor(config, dbName))
+
   def getDatabases: HttpRequest =
-    HttpRequest(HttpMethods.GET, uri = uriFor(config, "all_dbs"))
+    HttpRequest(HttpMethods.GET, uri = uriFor(config, "_all_dbs"))
 
   def getDocuments(dbName: String): HttpRequest =
     HttpRequest(HttpMethods.GET, uri = uriFor(config, s"$dbName/_all_docs"))

@@ -1,9 +1,9 @@
-package io.forward.ibm.cloudant.operations
+package io.forward.cloudant.http.client.operations
 
-import io.forward.ibm.cloudant.CloudantConfig
-import akka.http.scaladsl.model.{Uri, HttpMethods, HttpRequest}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
+import io.forward.cloudant.http.client.CloudantConfig
 
-class AccountOperations(config: CloudantConfig) {
+final class AccountOperations(config: CloudantConfig) {
   /**
     * To see if your Cloudant account is accessible, make a GET against https://$USERNAME.cloudant.com.
     *

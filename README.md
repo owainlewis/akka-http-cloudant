@@ -1,6 +1,6 @@
 # Akka HTTP Cloudant
 
-A pure Akka HTTP async client for IBM Cloudant.
+A functional async client for IBM Cloudant based on Akka HTTP.
 
 ## Example
 
