@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
 import akka.http.scaladsl.model.{ResponseEntity, HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.{Unmarshaller, Unmarshal}
 import akka.stream.ActorMaterializer
-import io.forward.cloudant.http.client.operations.{DatabaseOperations, DocumentOperations}
+import io.forward.cloudant.http.client.operations._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,10 +15,17 @@ final class Client(config: CloudantConfig) {
   implicit private val system = ActorSystem()
   implicit private val materializer = ActorMaterializer()
 
+  val account = new AccountOperations(config)
+  val attachment = new AttachmentOperations(config)
   val database = new DatabaseOperations(config)
   val document = new DocumentOperations(config)
+  val query = new QueryOperations(config)
+  val search = new SearchOperations(config)
+  val view = new ViewOperations(config)
 
-  def run[T](req: HttpRequest)(implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity,T]): Future[CloudantResponse[T]] =
+  def run[T](req: HttpRequest)(implicit
+                               ec: ExecutionContext,
+                               um: Unmarshaller[ResponseEntity, T]): Future[CloudantResponse[T]] =
     runRequest(req) flatMap { response =>
       Unmarshal(response.entity).to[T] map { body =>
         CloudantResponse(response.status.intValue, body)
