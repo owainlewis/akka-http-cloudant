@@ -2,8 +2,8 @@ package io.forward.cloudant.http.client
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
-import akka.http.scaladsl.model.{ResponseEntity, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.headers.{RawHeader, Authorization, BasicHttpCredentials}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshaller, Unmarshal}
 import akka.stream.ActorMaterializer
 import io.forward.cloudant.http.client.operations._
@@ -27,7 +27,7 @@ final class Client(config: CloudantConfig) {
                                ec: ExecutionContext,
                                um: Unmarshaller[ResponseEntity, T]): Future[CloudantResponse[T]] =
     runRequest(req) flatMap { response =>
-      Unmarshal(response.entity).to[T] map { body =>
+      Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[T] map { body =>
         CloudantResponse(response.status.intValue, body)
       }
     }
@@ -35,7 +35,8 @@ final class Client(config: CloudantConfig) {
   private def runRequest(req: HttpRequest): Future[HttpResponse] = {
     val authHeader = Authorization(BasicHttpCredentials(config.username, config.password))
     val authenticatedRequest =
-      req.withHeaders(authHeader)
+      req.withHeaders(authHeader, RawHeader("Content-Type", "application/json"))
+
     Http().singleRequest(authenticatedRequest)
   }
 }
