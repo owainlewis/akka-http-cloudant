@@ -1,9 +1,10 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model._
+import cats.data.Reader
 import io.forward.cloudant.http.client.CloudantConfig
 
-final class AttachmentOperations(config: CloudantConfig) {
+final class AttachmentOperations {
   /**
     * Read an attachment
     *
@@ -11,8 +12,9 @@ final class AttachmentOperations(config: CloudantConfig) {
     * @param documentId The document ID
     * @param attachment The attachment
     */
-  def readAttachment(dbName: String, documentId: String, attachment: String) =
-    HttpRequest(HttpMethods.GET, uriFor(config, s"$dbName/$documentId/$attachment"))
+  def readAttachment(dbName: String, documentId: String, attachment: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment")))
 
   /**
     * Delete an attachment
@@ -22,8 +24,9 @@ final class AttachmentOperations(config: CloudantConfig) {
     * @param attachment The attachment
     * @param rev A document revision
     */
-  def deleteAttachment(dbName: String, documentId: String, attachment: String, rev: String) =
-    HttpRequest(HttpMethods.DELETE, uriFor(config, s"$dbName/$documentId/$attachment")
-      .withQuery(Uri.Query(Map("rev" -> rev))))
+  def deleteAttachment(dbName: String, documentId: String, attachment: String, rev: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.DELETE, uriFor(config, s"$dbName/$documentId/$attachment")
+        .withQuery(Uri.Query(Map("rev" -> rev)))))
 }
 

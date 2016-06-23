@@ -14,5 +14,4 @@ final class AccountOperations {
   val ping: Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uriFor(c, "")))
-
 }

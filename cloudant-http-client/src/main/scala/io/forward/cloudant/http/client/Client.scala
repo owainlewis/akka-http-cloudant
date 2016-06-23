@@ -18,18 +18,17 @@ final class Client(config: CloudantConfig) {
   implicit private val materializer = ActorMaterializer()
 
   val account = new AccountOperations
-  val attachment = new AttachmentOperations(config)
-  val database = new DatabaseOperations(config)
-  val document = new DocumentOperations(config)
-  val query = new QueryOperations(config)
-  val search = new SearchOperations(config)
-  val view = new ViewOperations(config)
+  val attachment = new AttachmentOperations
+  val database = new DatabaseOperations
+  val document = new DocumentOperations
+  val query = new QueryOperations
+  val search = new SearchOperations
+  val view = new ViewOperations
 
   def exec(req: Reader[CloudantConfig, HttpRequest]) = runR(req).run(config)
 
-  def runR[T](op: Reader[CloudantConfig, HttpRequest])(implicit
-                               ec: ExecutionContext,
-                               um: Unmarshaller[ResponseEntity, T])
+  def runR[T](op: Reader[CloudantConfig, HttpRequest])
+             (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T])
   : Kleisli[Id, CloudantConfig, Future[CloudantResponse[T]]] =
     op.map(runRequest).map(_.flatMap { response =>
       Unmarshal(response.entity).to[T] map { body =>

@@ -1,26 +1,28 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model._
+import cats.data.Reader
 import io.forward.cloudant.http.client.CloudantConfig
 
-final class QueryOperations(config: CloudantConfig) {
-
+final class QueryOperations {
   /**
     * Create a new index
     *
-    * @param dbName
+    * @param dbName The database name
     * @param index A raw JSON string
     */
-  def createIndex(dbName: String, index: String): HttpRequest =
-    HttpRequest(HttpMethods.POST, uriFor(config, s"$dbName/_index"), entity = HttpEntity(ContentTypes.`application/json`, index))
+  def createIndex(dbName: String, index: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_index"), entity = HttpEntity(ContentTypes.`application/json`, index)))
 
   /**
     * List all Cloudant Query indexes
     *
     * @param dbName The database name
     */
-  def listIndexes(dbName: String): HttpRequest =
-    HttpRequest(HttpMethods.GET, uriFor(config, s"$dbName/_index"))
+  def listIndexes(dbName: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/_index")))
 
   /**
     * Delete an index
@@ -30,8 +32,9 @@ final class QueryOperations(config: CloudantConfig) {
     * @param indexType The type of the index (for example "json")
     * @param indexName The name of the index
     */
-  def deleteIndex(dbName: String, designDocId: String, indexType: String, indexName: String): HttpRequest =
-    HttpRequest(HttpMethods.DELETE, uriFor(config, s"$dbName/_index/$designDocId/$indexType/$indexName"))
+  def deleteIndex(dbName: String, designDocId: String, indexType: String, indexName: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/_index/$designDocId/$indexType/$indexName")))
 
   /**
     * Search for documents using an index
@@ -49,6 +52,7 @@ final class QueryOperations(config: CloudantConfig) {
     * @param dbName The database name
     * @param query A raw JSON index query
     */
-  def searchIndex(dbName: String, query: String): HttpRequest =
-    HttpRequest(HttpMethods.POST, uriFor(config, s"$dbName/_find"), entity = HttpEntity(ContentTypes.`application/json`, query))
+  def searchIndex(dbName: String, query: String): Reader[CloudantConfig, HttpRequest] =
+    Reader((c: CloudantConfig) =>
+      HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_find"), entity = HttpEntity(ContentTypes.`application/json`, query)))
 }
