@@ -27,7 +27,7 @@ class DatabaseOperations {
     */
   def read(dbName: String): Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
-    HttpRequest(HttpMethods.GET, uri = uriFor(c, dbName)))
+      HttpRequest(HttpMethods.GET, uri = uriFor(c, dbName)))
 
   /**
     * Delete a database
