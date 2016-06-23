@@ -12,7 +12,9 @@ final class AttachmentOperations {
     * @param documentId The document ID
     * @param attachment The attachment
     */
-  def readAttachment(dbName: String, documentId: String, attachment: String): Reader[CloudantConfig, HttpRequest] =
+  def readAttachment(dbName: String,
+                     documentId: String,
+                     attachment: String): Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment")))
 
@@ -24,9 +26,12 @@ final class AttachmentOperations {
     * @param attachment The attachment
     * @param rev A document revision
     */
-  def deleteAttachment(dbName: String, documentId: String, attachment: String, rev: String): Reader[CloudantConfig, HttpRequest] =
+  def deleteAttachment(dbName: String,
+                       documentId: String,
+                       attachment: String,
+                       rev: String): Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.DELETE, uriFor(config, s"$dbName/$documentId/$attachment")
+      HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$documentId/$attachment")
         .withQuery(Uri.Query(Map("rev" -> rev)))))
 }
 

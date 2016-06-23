@@ -25,7 +25,9 @@ final class Client(config: CloudantConfig) {
   val search = new SearchOperations
   val view = new ViewOperations
 
-  def exec(req: Reader[CloudantConfig, HttpRequest]) = runR(req).run(config)
+  def run[T](req: Reader[CloudantConfig, HttpRequest])
+            (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]) : Future[CloudantResponse[T]] =
+    runR[T](req).run(config)
 
   def runR[T](op: Reader[CloudantConfig, HttpRequest])
              (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T])
@@ -35,14 +37,6 @@ final class Client(config: CloudantConfig) {
         CloudantResponse(response.status.intValue, body)
       }
     })
-
-  def run[T](req: HttpRequest)(implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T])
-  : Future[CloudantResponse[T]] =
-    runRequest(req) flatMap { response =>
-      Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[T] map { body =>
-        CloudantResponse(response.status.intValue, body)
-      }
-    }
 
   private def runRequest(req: HttpRequest): Future[HttpResponse] = {
     val authHeader = Authorization(BasicHttpCredentials(config.username, config.password))
