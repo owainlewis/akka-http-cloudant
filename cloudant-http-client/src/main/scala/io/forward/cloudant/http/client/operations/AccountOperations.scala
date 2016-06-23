@@ -9,7 +9,6 @@ final class AccountOperations {
     * To see if your Cloudant account is accessible, make a GET against https://$USERNAME.cloudant.com.
     *
     * If you misspelled your account name, you might get a 503 ‘service unavailable’ error.
-    *
     */
   val ping: Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
