@@ -13,7 +13,7 @@ import io.forward.cloudant.http.client.operations._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-final class Client(config: CloudantConfig) {
+final class Cloudant(config: CloudantConfig) {
 
   implicit private val system = ActorSystem()
   implicit private val materializer = ActorMaterializer()
@@ -33,7 +33,7 @@ final class Client(config: CloudantConfig) {
     * @param ec An implicit execution context
     */
   def runResponse(op: CloudantOperation)
-            (implicit ec: ExecutionContext): Future[HttpResponse] =
+                 (implicit ec: ExecutionContext): Future[HttpResponse] =
     op.map(runRequest).run(config)
 
   /**
@@ -52,10 +52,10 @@ final class Client(config: CloudantConfig) {
   /**
     * Run a request. If the status codes match the ones provided (un)marshall else return a failure
     *
-    * @param op An operation to run
+    * @param op          An operation to run
     * @param statusCodes A list of status codes representing a success case
-    * @param ec An implicit execution context
-    * @param um An implicit entity (un)marshaller
+    * @param ec          An implicit execution context
+    * @param um          An implicit entity (un)marshaller
     */
   def runAs[T](op: CloudantOperation, statusCodes: List[Int])
               (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] =
@@ -71,7 +71,8 @@ final class Client(config: CloudantConfig) {
       }
     }.run(config)
 
-  def runAsEither[T](op: CloudantOperation, statusCodes: List[Int]): Future[Either[CloudantError, T]] =
+  def runAsEither[T](op: CloudantOperation, statusCodes: List[Int])
+                    (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Either[CloudantError, T]] =
     runAs[T](op, statusCodes) map (_.toEither)
 
   private def runRequest(req: HttpRequest): Future[HttpResponse] = {
@@ -81,7 +82,7 @@ final class Client(config: CloudantConfig) {
   }
 }
 
-object Client {
+object Cloudant {
   def apply(host: String, username: String, password: String) =
-    new Client(CloudantConfig(host, username, password))
+    new Cloudant(CloudantConfig(host, username, password))
 }

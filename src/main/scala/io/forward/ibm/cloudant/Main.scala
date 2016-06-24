@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 object Main extends App {
 
-  val cloudant = Client(
+  val cloudant = Cloudant(
     System.getenv("CLOUDANT_HOST"),
     System.getenv("CLOUDANT_USERNAME"),
     System.getenv("CLOUDANT_PASSWORD"))

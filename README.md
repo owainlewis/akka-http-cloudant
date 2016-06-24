@@ -7,7 +7,12 @@ A functional async client for IBM Cloudant based on Akka HTTP.
 ### Creating a client instance
 
 ```scala
-val cloudant = Client(System.getenv("CLOUDANT_HOST"), System.getenv("CLOUDANT_USERNAME"), System.getenv("CLOUDANT_PASSWORD"))
+
+val host = System.getenv("CLOUDANT_HOST")
+val user = System.getenv("CLOUDANT_USERNAME")
+val pass = System.getenv("CLOUDANT_PASSWORD")
+
+val cloudant = Cloudant(host, user, pass)
 ```
 
 ### Creating documents
