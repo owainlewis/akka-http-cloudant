@@ -1,7 +1,8 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model._
-import cats.data.Reader
+import cats.Id
+import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
 
 final class AttachmentOperations {
@@ -12,7 +13,7 @@ final class AttachmentOperations {
     * @param documentId The document ID
     * @param attachment The attachment
     */
-  def readAttachment(dbName: String, documentId: String, attachment: String): Reader[CloudantConfig, HttpRequest] =
+  def readAttachment(dbName: String, documentId: String, attachment: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment")))
 
@@ -27,7 +28,7 @@ final class AttachmentOperations {
   def deleteAttachment(dbName: String,
                        documentId: String,
                        attachment: String,
-                       rev: String): Reader[CloudantConfig, HttpRequest] =
+                       rev: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$documentId/$attachment")
         .withQuery(Uri.Query(Map("rev" -> rev)))))

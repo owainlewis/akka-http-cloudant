@@ -1,7 +1,8 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, Uri}
-import cats.data.Reader
+import cats.Id
+import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
 
 class DatabaseOperations {
@@ -16,7 +17,7 @@ class DatabaseOperations {
     *
     * @param dbName The name of the database to create
     */
-  def create(dbName: String): Reader[CloudantConfig, HttpRequest] =
+  def create(dbName: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.PUT, uri = uriFor(c, dbName)))
 
@@ -25,7 +26,7 @@ class DatabaseOperations {
     *
     * @param dbName The database name
     */
-  def read(dbName: String): Reader[CloudantConfig, HttpRequest] =
+  def read(dbName: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uri = uriFor(c, dbName)))
 
@@ -34,7 +35,7 @@ class DatabaseOperations {
     *
     * @param dbName THe database name
     */
-  def delete(dbName: String): Reader[CloudantConfig, HttpRequest] =
+  def delete(dbName: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.DELETE, uri = uriFor(c, dbName)))
 
@@ -42,7 +43,7 @@ class DatabaseOperations {
     * Get all databases
     *
     */
-  def getDatabases: Reader[CloudantConfig, HttpRequest] =
+  def getDatabases: Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uri = uriFor(c, "_all_dbs")))
 
@@ -52,7 +53,7 @@ class DatabaseOperations {
     * @param dbName The database name
     * @param query Additional query params
     */
-  def getDocuments(dbName: String, query: Map[String, String] = Map.empty): Reader[CloudantConfig, HttpRequest] =
+  def getDocuments(dbName: String, query: Map[String, String] = Map.empty): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uri = uriFor(c, s"$dbName/_all_docs")
         .withQuery(Uri.Query(query))))
@@ -63,7 +64,7 @@ class DatabaseOperations {
     * @param dbName The database name
     * @param query Additional query params
     */
-  def getChanges(dbName: String, query: Map[String, String] = Map.empty): Reader[CloudantConfig, HttpRequest] =
+  def getChanges(dbName: String, query: Map[String, String] = Map.empty): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uri = uriFor(c, s"$dbName/_changes")
         .withQuery(Uri.Query(query))))

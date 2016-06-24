@@ -1,7 +1,8 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
-import cats.data.Reader
+import cats.Id
+import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
 
 final class AccountOperations {
@@ -10,7 +11,7 @@ final class AccountOperations {
     *
     * If you misspelled your account name, you might get a 503 ‘service unavailable’ error.
     */
-  val ping: Reader[CloudantConfig, HttpRequest] =
+  val ping: Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uriFor(c, "")))
 }

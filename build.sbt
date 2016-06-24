@@ -17,7 +17,8 @@ lazy val client = (project in file("cloudant-http-client"))
         "com.typesafe.akka" %% "akka-http-core"         % akkaVersion,
         "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion,
         "com.typesafe.akka" %% "akka-stream"            % akkaVersion,
-        "org.typelevel"     %% "cats"                   % catsVersion
+        "org.typelevel"     %% "cats"                   % catsVersion,
+        "org.scalatest"     %% "scalatest"              % "2.2.6"       % "test"
       )
     }
   )
@@ -28,6 +29,7 @@ lazy val cloudantAkkaSprayJson = (project in file("cloudant-akka-spray-json"))
   .settings(
     name := "cloudant-akka-spray-json",
     libraryDependencies ++= Seq(
+      "io.spray" %%  "spray-json" % "1.3.2",
       "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaVersion
     )
   )

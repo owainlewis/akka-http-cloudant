@@ -1,7 +1,8 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model._
-import cats.data.Reader
+import cats.Id
+import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
 
 final class DocumentOperations {
@@ -23,7 +24,7 @@ final class DocumentOperations {
     * @param id The document ID
     * @param query Additional query params
     */
-  def read(dbName: String, id: String, query: Map[String, String] = Map.empty): Reader[CloudantConfig, HttpRequest] =
+  def read(dbName: String, id: String, query: Map[String, String] = Map.empty): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
     HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$id")
       .withQuery(Uri.Query(query))))
@@ -34,7 +35,7 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param document The document to update (raw JSON)
     */
-  def update(dbName: String, document: String): Reader[CloudantConfig, HttpRequest] =
+  def update(dbName: String, document: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.PUT, uriFor(c, dbName),
         entity = HttpEntity(ContentTypes.`application/json`, document)))
@@ -46,7 +47,7 @@ final class DocumentOperations {
     * @param id The document ID
     * @param rev The document revision
     */
-  def delete(dbName: String, id: String, rev: String): Reader[CloudantConfig, HttpRequest] =
+  def delete(dbName: String, id: String, rev: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$id")
         .withQuery(Uri.Query(Map("rev" -> rev)))))
@@ -57,7 +58,7 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param documents Raw JSON documents to create
     */
-  def bulkCreate(dbName: String, documents: String): Reader[CloudantConfig, HttpRequest] =
+  def bulkCreate(dbName: String, documents: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_bulk_docs"),
         entity = HttpEntity(ContentTypes.`application/json`, documents)))

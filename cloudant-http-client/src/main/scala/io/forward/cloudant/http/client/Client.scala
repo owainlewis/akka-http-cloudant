@@ -6,7 +6,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.ActorMaterializer
-import cats.data.{Reader, Xor}
+import cats.Id
+import cats.data.{Kleisli, Reader, Xor}
 import io.forward.cloudant.http.client.internal.CloudantError
 import io.forward.cloudant.http.client.operations._
 
@@ -31,7 +32,7 @@ final class Client(config: CloudantConfig) {
     * @param op A Cloudant operation
     * @param ec An implicit execution context
     */
-  def runResponse(op: Reader[CloudantConfig, HttpRequest])
+  def runResponse(op: CloudantOperation)
             (implicit ec: ExecutionContext): Future[HttpResponse] =
     op.map(runRequest).run(config)
 
@@ -41,7 +42,7 @@ final class Client(config: CloudantConfig) {
     * @param op A Cloudant operation
     * @param ec An implicit execution context
     */
-  def run(op: Reader[CloudantConfig, HttpRequest])(implicit ec: ExecutionContext): Future[CloudantOperationResponse] =
+  def run(op: CloudantOperation)(implicit ec: ExecutionContext): Future[CloudantOperationResponse] =
     runResponse(op) flatMap { response =>
       Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[String] map {
         CloudantOperationResponse(response.status.intValue(), _)
