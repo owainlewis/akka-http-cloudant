@@ -25,13 +25,26 @@ final class Client(config: CloudantConfig) {
   val search = new SearchOperations
   val view = new ViewOperations
 
+  /**
+    * Run a HTTP request and return the raw HTTP response.
+    *
+    * @param op A cloudant operation
+    * @param ec An implicit execution context
+    */
+  def runRaw(op: Reader[CloudantConfig, HttpRequest])
+            (implicit ec: ExecutionContext): Reader[CloudantConfig, Future[HttpResponse]] =
+    op.map(runRequest)
+
   def run[T](req: Reader[CloudantConfig, HttpRequest])
-            (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]) : Future[CloudantResponse[T]] =
+            (implicit
+             ec: ExecutionContext,
+             um: Unmarshaller[ResponseEntity, T]): Future[CloudantResponse[T]] =
     runR[T](req).run(config)
 
   def runR[T](op: Reader[CloudantConfig, HttpRequest])
-             (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T])
-  : Kleisli[Id, CloudantConfig, Future[CloudantResponse[T]]] =
+             (implicit
+              ec: ExecutionContext,
+              um: Unmarshaller[ResponseEntity, T]): Kleisli[Id, CloudantConfig, Future[CloudantResponse[T]]] =
     op.map(runRequest).map(_.flatMap { response =>
       Unmarshal(response.entity).to[T] map { body =>
         CloudantResponse(response.status.intValue, body)
