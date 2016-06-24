@@ -12,9 +12,7 @@ final class AttachmentOperations {
     * @param documentId The document ID
     * @param attachment The attachment
     */
-  def readAttachment(dbName: String,
-                     documentId: String,
-                     attachment: String): Reader[CloudantConfig, HttpRequest] =
+  def readAttachment(dbName: String, documentId: String, attachment: String): Reader[CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment")))
 
