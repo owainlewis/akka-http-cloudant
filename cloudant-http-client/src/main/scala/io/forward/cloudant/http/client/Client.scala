@@ -27,7 +27,7 @@ final class Client(config: CloudantConfig) {
   val view = new ViewOperations
 
   /**
-    * Run a HTTP request and return the raw HTTP response.
+    * Run a HTTP request and return the raw Akka HTTP response.
     *
     * @param op A Cloudant operation
     * @param ec An implicit execution context
@@ -55,7 +55,7 @@ final class Client(config: CloudantConfig) {
     * @param op An operation to run
     * @param statusCodes A list of status codes representing a success case
     * @param ec An implicit execution context
-    * @param um An implicit entity unmarshaller
+    * @param um An implicit entity (un)marshaller
     */
   def runAs[T](op: CloudantOperation, statusCodes: List[Int])
               (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] =
@@ -70,6 +70,9 @@ final class Client(config: CloudantConfig) {
           }
       }
     }.run(config)
+
+  def runAsEither[T](op: CloudantOperation, statusCodes: List[Int]): Future[Either[CloudantError, T]] =
+    runAs[T](op, statusCodes) map (_.toEither)
 
   private def runRequest(req: HttpRequest): Future[HttpResponse] = {
     val authHeader = Authorization(BasicHttpCredentials(config.username, config.password))
