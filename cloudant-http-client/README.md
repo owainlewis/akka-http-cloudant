@@ -38,5 +38,5 @@ val future1: Future[Xor[CloudantError, List[String]]] =
 Sample responses 
 
 ```scala
-CloudantOperationResponse(201, {"ok":true,"id":"c017a78480d0de37bf48ae0c1ea78497","rev":"1-acc307ed2aedd491f0267c9c9b623388"})
+CloudantOperationResponse(201, """{"ok":true,"id":"c017a78480d0de37bf48ae0c1ea78497","rev":"1-acc307ed2aedd491f0267c9c9b623388"}""")
 ```
