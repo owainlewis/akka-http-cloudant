@@ -42,5 +42,4 @@ val documentCreateFuture = for {
 ```scala
 val future1: Future[Xor[CloudantError, List[String]]] =
   cloudant.runAs[List[String]](cloudant.database.getDatabases, List(200))
-
 ```
