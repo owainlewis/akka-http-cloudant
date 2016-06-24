@@ -9,7 +9,7 @@ import scala.concurrent.Future
 
 object Main extends App {
 
-  val client = Client("https://owainlewis.cloudant.com", "owainlewis", """)
+  val client = Client("https://owainlewis.cloudant.com", "owainlewis", ")
 
   val future: Future[CloudantResponse[String]]=
     client.run[String](client.database.getDatabases)
