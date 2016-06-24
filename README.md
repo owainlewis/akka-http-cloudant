@@ -2,6 +2,8 @@
 
 A functional async client for IBM Cloudant based on Akka HTTP.
 
+![](https://cloudant.com/wp-content/themes/cloudant/images/ibm_cloudant.png)
+
 The library is split into distinct modules
 
 + A simple raw HTTP wrapper for Cloudant that abstracts all core operations
