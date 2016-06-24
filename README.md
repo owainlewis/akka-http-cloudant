@@ -2,6 +2,13 @@
 
 A functional async client for IBM Cloudant based on Akka HTTP.
 
+The library is split into distinct modules
+
++ A simple raw HTTP wrapper for Cloudant that abstracts all core operations
++ A higher level wrapper for Spray JSON
+
+If you don't want to use Spray JSON the lower level client can be used without any issues.
+
 ## Example
 
 ### Creating a client instance
