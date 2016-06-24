@@ -18,7 +18,7 @@ object Main extends App {
     System.getenv("CLOUDANT_PASSWORD"))
 
   val future1: Future[Xor[CloudantError, List[String]]] =
-    cloudant.runAs[List[String]](cloudant.database.getDatabases, List(200))
+    cloudant.runAs[List[String]](cloudant.database.getDatabases)
 
   val future = for {
     _ <- cloudant.run(cloudant.database.create("foobar"))

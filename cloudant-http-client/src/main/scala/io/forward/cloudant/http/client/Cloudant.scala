@@ -53,27 +53,18 @@ final class Cloudant(config: CloudantConfig) {
     * Run a request. If the status codes match the ones provided (un)marshall else return a failure
     *
     * @param op          An operation to run
-    * @param statusCodes A list of status codes representing a success case
     * @param ec          An implicit execution context
     * @param um          An implicit entity (un)marshaller
     */
-  def runAs[T](op: CloudantOperation, statusCodes: List[Int])
+  def runAs[T](op: CloudantOperation)
               (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] =
     op.map(runRequest).map { futureResponse =>
-      futureResponse flatMap { response =>
-        if (statusCodes.contains(response.status.intValue))
-          Unmarshal(response.entity.withContentType(ContentTypes.`application/json`))
-            .to[T] map Xor.Right.apply
-        else
-          Future.successful {
-            Xor.Left(CloudantError.Generic(response.status.intValue, ""))
-          }
-      }
+      futureResponse flatMap ResponseMapper.transform[T]
     }.run(config)
 
-  def runAsEither[T](op: CloudantOperation, statusCodes: List[Int])
+  def runAsEither[T](op: CloudantOperation)
                     (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Either[CloudantError, T]] =
-    runAs[T](op, statusCodes) map (_.toEither)
+    runAs[T](op) map (_.toEither)
 
   private def runRequest(req: HttpRequest): Future[HttpResponse] = {
     val authHeader = Authorization(BasicHttpCredentials(config.username, config.password))
