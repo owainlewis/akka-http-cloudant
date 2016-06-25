@@ -6,7 +6,6 @@ import io.forward.cloudant.http.client._
 import io.forward.cloudant.http.client.internal.CloudantError
 import spray.json.DefaultJsonProtocol._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object Main extends App {
@@ -16,15 +15,25 @@ object Main extends App {
     System.getenv("CLOUDANT_USERNAME"),
     System.getenv("CLOUDANT_PASSWORD"))
 
-  val future1: Future[Xor[CloudantError, List[String]]] =
-    cloudant.runAs[List[String]](cloudant.database.getDatabases)
+  implicit val ex = cloudant.ec
 
-  val future2 = for {
+  // Create a database
+
+  val example1 = cloudant.run(cloudant.database.create("foobar"))
+
+  // Create a database and then insert a document
+
+  val example2 = for {
     _ <- cloudant.run(cloudant.database.create("foobar"))
-   response <- cloudant.run(cloudant.document.create("foobar", """{"message": "hello"}"""))
+    response <- cloudant.run(cloudant.document.create("foobar", """{"message": "hello"}"""))
   } yield response
 
-  val future = cloudant.run(cloudant.document.read("foobar", "123"))
+  // Cast to type when running requests
+
+  val example3: Future[Xor[CloudantError, List[String]]] =
+    cloudant.runAs[List[String]](cloudant.database.getDatabases)
+
+  // Creating documents with implicit marshaller (spray JSON)
 
   case class User(firstName: String, lastName: String)
 
@@ -32,17 +41,18 @@ object Main extends App {
     implicit val format = jsonFormat2(User.apply)
   }
 
-  val createDoc = cloudant.run(cloudant.document.create("users", User("Jack", "Dorsey")))
+  val example4 = for {
+    _ <- cloudant.run(cloudant.database.create("users"))
+    _ <- cloudant.run(cloudant.document.create("users", User("Jack", "Dorsey")))
+  } yield ()
 
-  createDoc.onSuccess { case r =>
-      println(r)
+  // Fetch a document and unmarshall to Scala
+
+  val getDoc: Future[Xor[CloudantError, User]] =
+   cloudant.runAs[User](cloudant.document.read("users", "4ae5791f12636e35b4accb2cc386ce29"))
+
+
+  val example5 = cloudant.run(cloudant.database.getDocuments("users")).onSuccess { case result =>
+    println(result)
   }
-
-  val getDoc = cloudant.runAsUnsafe[User](cloudant.document.read("users", "4ae5791f12636e35b4accb2cc386ce29"))
-
-  getDoc.onSuccess { case r =>
-      println(r)
-  }
-
-  
 }

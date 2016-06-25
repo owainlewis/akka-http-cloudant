@@ -26,20 +26,37 @@ val cloudant = Cloudant(host, user, pass)
 
 ### Creating documents
 
-```scala
+Create a database and then insert a document
 
-val documentCreateFuture = for {
+```scala
+val example2 = for {
   _ <- cloudant.run(cloudant.database.create("foobar"))
   response <- cloudant.run(cloudant.document.create("foobar", """{"message": "hello"}"""))
 } yield response
-
-// CloudantOperationResponse(201,{"ok":true,"id":"c017a78480d0de37bf48ae0c1ea78497","rev":"1-acc307ed2aedd491f0267c9c9b623388"})
-
 ```
 
-### Deserializing responses
+Creating documents with implicit marshaller (spray JSON)
+
 
 ```scala
-val future1: Future[Xor[CloudantError, List[String]]] =
-  cloudant.runAs[List[String]](cloudant.database.getDatabases, List(200))
+case class User(firstName: String, lastName: String)
+
+object User {
+  implicit val format = jsonFormat2(User.apply)
+}
+
+val example4 = for {
+  _ <- cloudant.run(cloudant.database.create("users"))
+  _ <- cloudant.run(cloudant.document.create("users", User("Jack", "Dorsey")))
+} yield ()
 ```
+
+### Casting results
+
+As long as you have an implicit ToEntityMarshaller for a type available you can cast the results
+
+```scala
+val example3: Future[Xor[CloudantError, List[String]]] =
+  cloudant.runAs[List[String]](cloudant.database.getDatabases)
+```
+
