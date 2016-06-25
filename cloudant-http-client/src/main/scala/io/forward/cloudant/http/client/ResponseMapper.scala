@@ -25,7 +25,10 @@ object ResponseMapper {
     * @tparam T The type to create if response is successful
     */
   def transform[T](response: HttpResponse)
-                  (implicit ec: ExecutionContext, mat: Materializer, um: Unmarshaller[ResponseEntity, T]): Future[Xor[Generic, T]] = {
+                  (implicit 
+                  ec: ExecutionContext, 
+                  mat: Materializer, 
+                  um: Unmarshaller[ResponseEntity, T]): Future[Xor[Generic, T]] = {
     val status = response.status.intValue
     if (failureCodes.contains(status))
       Future.failed(CloudantException.Generic(status))
