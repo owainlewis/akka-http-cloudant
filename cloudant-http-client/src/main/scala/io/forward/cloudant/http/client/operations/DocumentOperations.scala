@@ -2,11 +2,10 @@ package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.marshalling.{Marshal, ToEntityMarshaller}
 import akka.http.scaladsl.model._
-import cats.Id
-import cats.data.{Kleisli, Reader}
+import cats.data.Reader
 import io.forward.cloudant.http.client.CloudantConfig
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 final class DocumentOperations {
   /**
@@ -15,10 +14,11 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param document The document to create (raw JSON)
     */
-  def create(dbName: String, document: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def create(dbName: String, document: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.POST, uriFor(c, dbName),
-       entity = HttpEntity(ContentTypes.`application/json`, document)))
+      Future.successful(
+        HttpRequest(HttpMethods.POST, uriFor(c, dbName),
+         entity = HttpEntity(ContentTypes.`application/json`, document))))
 
   /**
     * Create a document using a generic to entity marshaller
@@ -28,7 +28,8 @@ final class DocumentOperations {
     * @param em An implicit entity marshaller
     * @tparam A The document type
     */
-  def create[A](dbName: String, document: A)(implicit em: ToEntityMarshaller[A]): Kleisli[Id, CloudantConfig, Future[HttpRequest]] =
+  def create[A](dbName: String, document: A)
+               (implicit em: ToEntityMarshaller[A], ec: ExecutionContext): CloudantKleisli =
     Reader { (c: CloudantConfig) =>
       Marshal(document).to[MessageEntity] map { e =>
         HttpRequest(HttpMethods.POST, uriFor(c, dbName), entity = e)
@@ -42,10 +43,11 @@ final class DocumentOperations {
     * @param id The document ID
     * @param query Additional query params
     */
-  def read(dbName: String, id: String, query: Map[String, String] = Map.empty): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def read(dbName: String, id: String, query: Map[String, String] = Map.empty): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-    HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$id")
-      .withQuery(Uri.Query(query))))
+      Future.successful(
+        HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$id")
+          .withQuery(Uri.Query(query)))))
 
   /**
     * Update a document
@@ -53,10 +55,11 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param document The document to update (raw JSON)
     */
-  def update(dbName: String, document: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def update(dbName: String, document: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
+      Future.successful(
       HttpRequest(HttpMethods.PUT, uriFor(c, dbName),
-        entity = HttpEntity(ContentTypes.`application/json`, document)))
+        entity = HttpEntity(ContentTypes.`application/json`, document))))
 
   /**
     * Update a document using an implicit ToEntityMarshaller
@@ -66,7 +69,8 @@ final class DocumentOperations {
     * @param em An implicit to entity marshaller
     * @tparam A Document type
     */
-  def update[A](dbName: String, document: A)(implicit em: ToEntityMarshaller[A]): Kleisli[Id, CloudantConfig, Future[HttpRequest]] =
+  def update[A](dbName: String, document: A)
+               (implicit em: ToEntityMarshaller[A], ec: ExecutionContext): CloudantKleisli =
     Reader { (c: CloudantConfig) =>
       Marshal(document).to[MessageEntity] map { e =>
         HttpRequest(HttpMethods.PUT, uriFor(c, dbName), entity = e)
@@ -80,10 +84,11 @@ final class DocumentOperations {
     * @param id The document ID
     * @param rev The document revision
     */
-  def delete(dbName: String, id: String, rev: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def delete(dbName: String, id: String, rev: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$id")
-        .withQuery(Uri.Query(Map("rev" -> rev)))))
+      Future.successful(
+        HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$id")
+          .withQuery(Uri.Query(Map("rev" -> rev))))))
 
   /**
     * Bulk update documents (see docs for more information about payload structure)
@@ -91,8 +96,9 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param documents Raw JSON documents to create
     */
-  def bulkCreate(dbName: String, documents: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def bulkCreate(dbName: String, documents: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_bulk_docs"),
-        entity = HttpEntity(ContentTypes.`application/json`, documents)))
+      Future.successful(
+        HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_bulk_docs"),
+          entity = HttpEntity(ContentTypes.`application/json`, documents))))
 }

@@ -1,8 +1,7 @@
 package io.forward.ibm.cloudant
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.HttpResponse
-import cats.data.{Xor, Reader}
+import cats.data.Xor
 import io.forward.cloudant.http.client._
 import io.forward.cloudant.http.client.internal.CloudantError
 import spray.json.DefaultJsonProtocol._
@@ -27,11 +26,23 @@ object Main extends App {
 
   val future = cloudant.run(cloudant.document.read("foobar", "123"))
 
-  future.onSuccess { case result =>
-    println(result.)
+  case class User(firstName: String, lastName: String)
+
+  object User {
+    implicit val format = jsonFormat2(User.apply)
   }
 
-  future.onFailure { case fe =>
-    println(fe.getMessage)
+  val createDoc = cloudant.run(cloudant.document.create("users", User("Jack", "Dorsey")))
+
+  createDoc.onSuccess { case r =>
+      println(r)
   }
+
+  val getDoc = cloudant.runAsUnsafe[User](cloudant.document.read("users", "4ae5791f12636e35b4accb2cc386ce29"))
+
+  getDoc.onSuccess { case r =>
+      println(r)
+  }
+
+  
 }

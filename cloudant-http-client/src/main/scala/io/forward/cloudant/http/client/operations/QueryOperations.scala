@@ -5,6 +5,8 @@ import cats.Id
 import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
 
+import scala.concurrent.Future
+
 final class QueryOperations {
   /**
     * Create a new index
@@ -12,18 +14,20 @@ final class QueryOperations {
     * @param dbName The database name
     * @param index A raw JSON string
     */
-  def createIndex(dbName: String, index: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def createIndex(dbName: String, index: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_index"), entity = HttpEntity(ContentTypes.`application/json`, index)))
+      Future.successful(
+        HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_index"), entity = HttpEntity(ContentTypes.`application/json`, index))))
 
   /**
     * List all Cloudant Query indexes
     *
     * @param dbName The database name
     */
-  def listIndexes(dbName: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def listIndexes(dbName: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/_index")))
+      Future.successful(
+        HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/_index"))))
 
   /**
     * Delete an index
@@ -33,9 +37,10 @@ final class QueryOperations {
     * @param indexType The type of the index (for example "json")
     * @param indexName The name of the index
     */
-  def deleteIndex(dbName: String, designDocId: String, indexType: String, indexName: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def deleteIndex(dbName: String, designDocId: String, indexType: String, indexName: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/_index/$designDocId/$indexType/$indexName")))
+      Future.successful(
+        HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/_index/$designDocId/$indexType/$indexName"))))
 
   /**
     * Search for documents using an index
@@ -53,7 +58,8 @@ final class QueryOperations {
     * @param dbName The database name
     * @param query A raw JSON index query
     */
-  def searchIndex(dbName: String, query: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def searchIndex(dbName: String, query: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_find"), entity = HttpEntity(ContentTypes.`application/json`, query)))
+      Future.successful(
+        HttpRequest(HttpMethods.POST, uriFor(c, s"$dbName/_find"), entity = HttpEntity(ContentTypes.`application/json`, query))))
 }

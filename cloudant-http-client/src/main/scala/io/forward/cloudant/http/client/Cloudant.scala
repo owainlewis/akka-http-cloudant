@@ -31,17 +31,17 @@ final class Cloudant(config: CloudantConfig) {
     * @param op A Cloudant operation
     * @param ec An implicit execution context
     */
-  def runResponse(op: CloudantOperation)
+  def runResponse(op: CloudantKleisli)
                  (implicit ec: ExecutionContext): Future[HttpResponse] =
-    op.map(runRequest).run(config)
+    op.run(config) flatMap runRequest
 
   /**
-    * Run an operation and return the status code and response body wrapped in a [[CloudantOperationResponse]]
+    * Run an operation and return the status code and response body
     *
     * @param op A Cloudant operation
     * @param ec An implicit execution context
     */
-  def run(op: CloudantOperation)(implicit ec: ExecutionContext): Future[CloudantOperationResponse] =
+  def run(op: CloudantKleisli)(implicit ec: ExecutionContext): Future[CloudantOperationResponse] =
     runResponse(op) flatMap { response =>
       Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[String] map {
         CloudantOperationResponse(response.status.intValue(), _)
@@ -59,13 +59,25 @@ final class Cloudant(config: CloudantConfig) {
     * @param ec          An implicit execution context
     * @param um          An implicit entity (un)marshaller
     */
-  def runAs[T](op: CloudantOperation)
-              (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] =
-    op.map(runRequest)
-      .map(_ flatMap ResponseMapper.transform[T])
-      .run(config)
+  def runAs[T](op: CloudantKleisli)
+              (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] = for {
+    req <- op.run(config)
+    response <- runRequest(req)
+    result <- ResponseMapper.transform[T](response)
+  } yield result
 
-  def runAsEither[T](op: CloudantOperation)
+  /**
+    * Same as above but doesn't check the response code for errors.
+    *
+    */
+  def runAsUnsafe[T](op: CloudantKleisli)
+              (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[T] = for {
+    req <- op.run(config)
+    response <- runRequest(req)
+    result <- ResponseMapper.entityAs[T](response)
+  } yield result
+
+  def runAsEither[T](op: CloudantKleisli)
                     (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Either[CloudantError, T]] =
     runAs[T](op) map (_.toEither)
 

@@ -1,9 +1,10 @@
 package io.forward.cloudant.http.client.operations
 
 import akka.http.scaladsl.model._
-import cats.Id
-import cats.data.{Kleisli, Reader}
+import cats.data.Reader
 import io.forward.cloudant.http.client.CloudantConfig
+
+import scala.concurrent.Future
 
 final class AttachmentOperations {
   /**
@@ -13,9 +14,9 @@ final class AttachmentOperations {
     * @param documentId The document ID
     * @param attachment The attachment
     */
-  def readAttachment(dbName: String, documentId: String, attachment: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+  def readAttachment(dbName: String, documentId: String, attachment: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment")))
+      Future.successful(HttpRequest(HttpMethods.GET, uriFor(c, s"$dbName/$documentId/$attachment"))))
 
   /**
     * Delete an attachment
@@ -28,9 +29,11 @@ final class AttachmentOperations {
   def deleteAttachment(dbName: String,
                        documentId: String,
                        attachment: String,
-                       rev: String): Kleisli[Id, CloudantConfig, HttpRequest] =
+                       rev: String): CloudantKleisli =
     Reader((c: CloudantConfig) =>
-      HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$documentId/$attachment")
-        .withQuery(Uri.Query(Map("rev" -> rev)))))
+      Future.successful {
+        HttpRequest(HttpMethods.DELETE, uriFor(c, s"$dbName/$documentId/$attachment")
+          .withQuery(Uri.Query(Map("rev" -> rev))))
+      })
 }
 
