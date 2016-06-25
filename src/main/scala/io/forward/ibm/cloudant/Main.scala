@@ -20,13 +20,15 @@ object Main extends App {
   val future1: Future[Xor[CloudantError, List[String]]] =
     cloudant.runAs[List[String]](cloudant.database.getDatabases)
 
-  val future = for {
+  val future2 = for {
     _ <- cloudant.run(cloudant.database.create("foobar"))
    response <- cloudant.run(cloudant.document.create("foobar", """{"message": "hello"}"""))
   } yield response
 
+  val future = cloudant.run(cloudant.document.read("foobar", "123"))
+
   future.onSuccess { case result =>
-    println(result)
+    println(result.)
   }
 
   future.onFailure { case fe =>

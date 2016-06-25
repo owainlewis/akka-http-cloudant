@@ -1,9 +1,12 @@
 package io.forward.cloudant.http.client.operations
 
+import akka.http.scaladsl.marshalling.{Marshal, ToEntityMarshaller}
 import akka.http.scaladsl.model._
 import cats.Id
 import cats.data.{Kleisli, Reader}
 import io.forward.cloudant.http.client.CloudantConfig
+
+import scala.concurrent.Future
 
 final class DocumentOperations {
   /**
@@ -12,10 +15,25 @@ final class DocumentOperations {
     * @param dbName The database name
     * @param document The document to create (raw JSON)
     */
-  def create(dbName: String, document: String): Reader[CloudantConfig, HttpRequest] =
+  def create(dbName: String, document: String): Kleisli[Id, CloudantConfig, HttpRequest] =
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.POST, uriFor(c, dbName),
        entity = HttpEntity(ContentTypes.`application/json`, document)))
+
+  /**
+    * Create a document using a generic to entity marshaller
+    *
+    * @param dbName The database name
+    * @param document A document type
+    * @param em An implicit entity marshaller
+    * @tparam A The document type
+    */
+  def create[A](dbName: String, document: A)(implicit em: ToEntityMarshaller[A]): Kleisli[Id, CloudantConfig, Future[HttpRequest]] =
+    Reader { (c: CloudantConfig) =>
+      Marshal(document).to[MessageEntity] map { e =>
+        HttpRequest(HttpMethods.POST, uriFor(c, dbName), entity = e)
+      }
+    }
 
   /**
     * Read a document
@@ -39,6 +57,21 @@ final class DocumentOperations {
     Reader((c: CloudantConfig) =>
       HttpRequest(HttpMethods.PUT, uriFor(c, dbName),
         entity = HttpEntity(ContentTypes.`application/json`, document)))
+
+  /**
+    * Update a document using an implicit ToEntityMarshaller
+    *
+    * @param dbName The database name
+    * @param document A document type that can be marshalled
+    * @param em An implicit to entity marshaller
+    * @tparam A Document type
+    */
+  def update[A](dbName: String, document: A)(implicit em: ToEntityMarshaller[A]): Kleisli[Id, CloudantConfig, Future[HttpRequest]] =
+    Reader { (c: CloudantConfig) =>
+      Marshal(document).to[MessageEntity] map { e =>
+        HttpRequest(HttpMethods.PUT, uriFor(c, dbName), entity = e)
+      }
+    }
 
   /**
     * Delete a document

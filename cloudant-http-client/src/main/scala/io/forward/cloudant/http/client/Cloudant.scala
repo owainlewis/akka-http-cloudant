@@ -6,8 +6,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.ActorMaterializer
-import cats.Id
-import cats.data.{Kleisli, Reader, Xor}
+import cats.data.Xor
 import io.forward.cloudant.http.client.internal.CloudantError
 import io.forward.cloudant.http.client.operations._
 
@@ -50,7 +49,11 @@ final class Cloudant(config: CloudantConfig) {
     }
 
   /**
-    * Run a request. If the status codes match the ones provided (un)marshall else return a failure
+    * Run a request.
+    *
+    * The response mapper handles transforming responses into an Xor representing success or failure.
+    *
+    * If a 500 status is returned the future will fail.
     *
     * @param op          An operation to run
     * @param ec          An implicit execution context
@@ -58,9 +61,9 @@ final class Cloudant(config: CloudantConfig) {
     */
   def runAs[T](op: CloudantOperation)
               (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Xor[CloudantError, T]] =
-    op.map(runRequest).map { futureResponse =>
-      futureResponse flatMap ResponseMapper.transform[T]
-    }.run(config)
+    op.map(runRequest)
+      .map(_ flatMap ResponseMapper.transform[T])
+      .run(config)
 
   def runAsEither[T](op: CloudantOperation)
                     (implicit ec: ExecutionContext, um: Unmarshaller[ResponseEntity, T]): Future[Either[CloudantError, T]] =

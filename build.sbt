@@ -23,17 +23,6 @@ lazy val client = (project in file("cloudant-http-client"))
     }
   )
 
-lazy val cloudantAkkaSprayJson = (project in file("cloudant-akka-spray-json"))
-  .dependsOn(client)
-  .settings(commonSettings)
-  .settings(
-    name := "cloudant-akka-spray-json",
-    libraryDependencies ++= Seq(
-      "io.spray" %%  "spray-json" % "1.3.2",
-      "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaVersion
-    )
-  )
-
 lazy val root = (project in file("."))
   .aggregate(client)
   .dependsOn(client)
