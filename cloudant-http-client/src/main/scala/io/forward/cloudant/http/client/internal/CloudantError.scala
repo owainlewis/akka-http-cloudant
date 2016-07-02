@@ -15,4 +15,3 @@ object CloudantError {
 object CloudantException {
   case class Generic(status: Int) extends CloudantException
 }
-
