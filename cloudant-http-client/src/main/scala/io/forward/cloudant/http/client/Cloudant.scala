@@ -12,11 +12,8 @@ import io.forward.cloudant.http.client.operations._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-final class Cloudant(config: CloudantConfig) {
-
-  implicit private val system = ActorSystem()
-  implicit private val materializer = ActorMaterializer()
-  implicit val ec: ExecutionContext = system.dispatcher
+final class Cloudant(config: CloudantConfig)
+                    (implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContext) {
 
   val account = new AccountOperations
   val attachment = new AttachmentOperations
@@ -88,6 +85,8 @@ final class Cloudant(config: CloudantConfig) {
 }
 
 object Cloudant {
-  def apply(host: String, username: String, password: String) =
+  def apply(host: String, username: String, password: String)
+           (implicit system: ActorSystem, materializer: ActorMaterializer, ec: ExecutionContext) = {
     new Cloudant(CloudantConfig(host, username, password))
+  }
 }
