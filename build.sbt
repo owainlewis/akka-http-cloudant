@@ -5,7 +5,6 @@ lazy val commonSettings = Seq(
 )
 
 val akkaVersion = "2.4.7"
-
 val catsVersion = "0.6.0"
 
 lazy val client = (project in file("cloudant-http-client"))
@@ -33,6 +32,6 @@ lazy val root = (project in file("."))
     publishLocal := {},
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaVersion,
-      "io.spray" %%  "spray-json" % "1.3.2"
+      "io.spray"          %%  "spray-json"                       % "1.3.2"
     )
   )
