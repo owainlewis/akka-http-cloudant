@@ -5,8 +5,7 @@ import org.scalatest._
 class CloudantConfigSpec extends WordSpecLike with Matchers {
 
   "The CloudantConfig" should {
-
-    "get constructed correctly" in {
+    "be constructed correctly" in {
       val config = CloudantConfig("http://user.cloudant.com", "username", "password")
       config.host shouldBe "http://user.cloudant.com"
       config.username shouldBe "username"
